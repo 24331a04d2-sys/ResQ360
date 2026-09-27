@@ -1,0 +1,8 @@
+{
+  "name": "RESQ360 - Emergency Response & Disaster Management",
+  "description": "Production-ready emergency response and disaster-management coordination platform connecting citizens, field responders, and central emergency operations.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

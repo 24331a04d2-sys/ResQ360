@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* Leaflet map styles and custom pins */
+.leaflet-container {
+  font-family: inherit;
+  z-index: 10;
+}
+
+.custom-incident-pin {
+  background: transparent;
+  border: none;
+}
+
+.custom-incident-pin svg {
+  display: block;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+.leaflet-popup-content {
+  margin: 0.75rem;
+  line-height: 1.4;
+}

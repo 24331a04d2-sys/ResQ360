@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == '24331a04d2@mvgrce.edu.in' ||
+        (exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isResponder() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/profiles/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/profiles/$(request.auth.uid)).data.role == 'responder')
+      );
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Connection validation document
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // System counters
+    match /system/{docId} {
+      allow read, write: if true;
+    }
+
+    // User Profiles
+    match /profiles/{uid} {
+      allow get: if isSignedIn() && (request.auth.uid == uid || isAdmin() || isResponder());
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow update: if isSignedIn() && (
+        isAdmin() ||
+        (request.auth.uid == uid && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'notificationPreferences', 'updatedAt', 'lastActiveAt']))
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Incidents
+    match /incidents/{incidentId} {
+      allow get: if true; // Permitted for guest tracking with ID and authorized operational staff
+      allow list: if isAdmin() || isResponder() || (isSignedIn() && resource.data.citizenId == request.auth.uid) || resource.data.isDemo == true;
+      allow create: if true; // 1-Tap SOS and guest citizen emergency creation must be guaranteed
+      allow update: if (
+        isAdmin() ||
+        isResponder() ||
+        (isSignedIn() && resource.data.citizenId == request.auth.uid)
+      );
+      allow delete: if isAdmin();
+
+      // Incident Status History subcollection
+      match /statusHistory/{historyId} {
+        allow read: if true;
+        allow create: if true;
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // Response Teams
+    match /teams/{teamId} {
+      allow read: if true;
+      allow create, update: if isAdmin() || incoming().isDemo == true;
+      allow delete: if isAdmin() || resource.data.isDemo == true;
+    }
+
+    // Responders
+    match /responders/{responderId} {
+      allow read: if true;
+      allow create: if isAdmin() || incoming().isDemo == true;
+      allow update: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid) || incoming().isDemo == true;
+      allow delete: if isAdmin() || resource.data.isDemo == true;
+    }
+
+    // Emergency Resources & Logistics Stock
+    match /resources/{resourceId} {
+      allow read: if true;
+      allow write: if isAdmin() || incoming().isDemo == true;
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Operational Audit Logs
+    match /auditLogs/{auditLogId} {
+      allow read: if isAdmin() || isResponder();
+      allow create: if true;
+      allow update, delete: if false; // Audit logs are immutable
+    }
+
+    // Settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

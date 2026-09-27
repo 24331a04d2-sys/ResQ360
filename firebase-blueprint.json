@@ -1,0 +1,218 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "UserProfile",
+      "description": "User profile with role, contact, and settings",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["citizen", "responder", "admin"] },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "badgeNumber": { "type": "string", "maxLength": 50 },
+        "teamType": { "type": "string", "maxLength": 80 },
+        "responderProfileId": { "type": "string", "maxLength": 128 },
+        "active": { "type": "boolean" },
+        "notificationPreferences": { "type": "object" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "lastActiveAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "role", "name", "email", "createdAt", "updatedAt"]
+    },
+    "Incident": {
+      "title": "EmergencyIncident",
+      "description": "Emergency incident reported by citizen or guest with triage, geocoding, and dispatch progression",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "incidentId": { "type": "string", "maxLength": 50 },
+        "citizenId": { "type": "string", "maxLength": 128 },
+        "citizenName": { "type": "string", "maxLength": 100 },
+        "citizenPhone": { "type": "string", "maxLength": 30 },
+        "type": { "type": "string", "maxLength": 80 },
+        "description": { "type": "string", "maxLength": 3000 },
+        "affectedPeople": { "type": "number" },
+        "isAnyoneInjured": { "type": "boolean" },
+        "isAnyoneTrapped": { "type": "boolean" },
+        "isImmediateDanger": { "type": "boolean" },
+        "severity": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+        "severityScore": { "type": "number" },
+        "severityFactors": { "type": "array" },
+        "aiAssessment": { "type": "object" },
+        "verifiedByAdmin": { "type": "boolean" },
+        "verifiedAt": { "type": "string" },
+        "verifiedByUid": { "type": "string", "maxLength": 128 },
+        "verifiedByName": { "type": "string", "maxLength": 100 },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "locationAddress": { "type": "string", "maxLength": 300 },
+        "locationAccuracy": { "type": "number" },
+        "photoStoragePath": { "type": "string", "maxLength": 300 },
+        "photoMetadata": { "type": "object" },
+        "status": { "type": "string", "enum": ["reported", "ai_analyzed", "verified", "acknowledged", "assigned", "dispatched", "en_route", "arrived", "resolved", "cancelled"] },
+        "assignedResponderId": { "type": "string", "maxLength": 128 },
+        "assignedResponderName": { "type": "string", "maxLength": 100 },
+        "assignedResponderTeam": { "type": "string", "maxLength": 100 },
+        "assignedTeamId": { "type": "string", "maxLength": 128 },
+        "assignedTeamName": { "type": "string", "maxLength": 100 },
+        "isGuestReport": { "type": "boolean" },
+        "guestAccessTokenHash": { "type": "string", "maxLength": 128 },
+        "isDemo": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "resolvedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "incidentId", "citizenId", "type", "description", "status", "createdAt", "updatedAt"]
+    },
+    "StatusHistoryItem": {
+      "title": "IncidentStatusHistory",
+      "description": "Chronological audit of status changes for an incident",
+      "type": "object",
+      "properties": {
+        "status": { "type": "string", "maxLength": 50 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "updatedByUid": { "type": "string", "maxLength": 128 },
+        "updatedByName": { "type": "string", "maxLength": 100 },
+        "updatedByRole": { "type": "string", "maxLength": 50 },
+        "note": { "type": "string", "maxLength": 500 }
+      },
+      "required": ["status", "timestamp", "updatedByUid", "updatedByName", "updatedByRole"]
+    },
+    "Team": {
+      "title": "ResponseTeam",
+      "description": "Disaster response, medical, or fire rescue unit",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "type": { "type": "string", "maxLength": 80 },
+        "memberCount": { "type": "number" },
+        "status": { "type": "string", "enum": ["available", "dispatched", "responding", "busy", "resting", "maintenance", "offline"] },
+        "currentIncidentId": { "type": "string", "maxLength": 128 },
+        "currentIncidentCode": { "type": "string", "maxLength": 50 },
+        "contact": { "type": "string", "maxLength": 50 },
+        "station": { "type": "string", "maxLength": 100 },
+        "baseLocation": { "type": "string", "maxLength": 200 },
+        "vehicles": { "type": "string", "maxLength": 200 },
+        "equipment": { "type": "string", "maxLength": 300 },
+        "isDemo": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "type", "status", "updatedAt"]
+    },
+    "Responder": {
+      "title": "FieldResponder",
+      "description": "Authorized field responder operational record",
+      "type": "object",
+      "properties": {
+        "responderId": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "email": { "type": "string", "maxLength": 100 },
+        "badgeNumber": { "type": "string", "maxLength": 50 },
+        "teamType": { "type": "string", "maxLength": 80 },
+        "teamId": { "type": "string", "maxLength": 128 },
+        "availability": { "type": "string", "enum": ["available", "assigned", "en_route", "on_scene", "offline"] },
+        "currentIncidentId": { "type": "string", "maxLength": 128 },
+        "currentIncidentCode": { "type": "string", "maxLength": 50 },
+        "lastActiveAt": { "type": "string", "format": "date-time" },
+        "location": { "type": "string", "maxLength": 200 },
+        "isDemo": { "type": "boolean" }
+      },
+      "required": ["responderId", "userId", "name", "badgeNumber", "availability"]
+    },
+    "Resource": {
+      "title": "EmergencyResource",
+      "description": "Logistics stock item such as ambulances, kits, or water units",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 100 },
+        "category": { "type": "string", "maxLength": 80 },
+        "totalQuantity": { "type": "number" },
+        "availableQuantity": { "type": "number" },
+        "allocatedQuantity": { "type": "number" },
+        "unit": { "type": "string", "maxLength": 40 },
+        "status": { "type": "string", "enum": ["adequate", "low", "critical"] },
+        "location": { "type": "string", "maxLength": 150 },
+        "isDemo": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "category", "totalQuantity", "availableQuantity", "allocatedQuantity", "unit", "status"]
+    },
+    "Notification": {
+      "title": "SystemNotification",
+      "description": "In-app operational or user notification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "maxLength": 50 },
+        "title": { "type": "string", "maxLength": 120 },
+        "message": { "type": "string", "maxLength": 500 },
+        "type": { "type": "string", "enum": ["info", "warning", "critical", "success"] },
+        "read": { "type": "boolean" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "relatedIncidentId": { "type": "string", "maxLength": 128 },
+        "relatedIncidentCode": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["title", "message", "type", "read", "timestamp"]
+    },
+    "AuditLog": {
+      "title": "SystemAuditLog",
+      "description": "Privileged audit trail of operational interventions",
+      "type": "object",
+      "properties": {
+        "actorId": { "type": "string", "maxLength": 128 },
+        "actorName": { "type": "string", "maxLength": 100 },
+        "actorRole": { "type": "string", "maxLength": 50 },
+        "action": { "type": "string", "maxLength": 80 },
+        "targetType": { "type": "string", "maxLength": 50 },
+        "targetId": { "type": "string", "maxLength": 128 },
+        "targetCode": { "type": "string", "maxLength": 50 },
+        "previousValue": { "type": "string", "maxLength": 500 },
+        "newValue": { "type": "string", "maxLength": 500 },
+        "details": { "type": "string", "maxLength": 1000 },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["actorId", "actorName", "actorRole", "action", "targetType", "targetId", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/profiles/{uid}": {
+      "schema": "Profile",
+      "description": "User profiles indexed by Firebase Auth UID"
+    },
+    "/incidents/{incidentId}": {
+      "schema": "Incident",
+      "description": "Emergency incidents collection"
+    },
+    "/incidents/{incidentId}/statusHistory/{historyId}": {
+      "schema": "StatusHistoryItem",
+      "description": "Audit and timeline of status updates for an incident"
+    },
+    "/teams/{teamId}": {
+      "schema": "Team",
+      "description": "Emergency response teams and readiness state"
+    },
+    "/responders/{responderId}": {
+      "schema": "Responder",
+      "description": "Field responder records"
+    },
+    "/resources/{resourceId}": {
+      "schema": "Resource",
+      "description": "Emergency equipment and logistics stock inventory"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User and role-based notifications"
+    },
+    "/auditLogs/{auditLogId}": {
+      "schema": "AuditLog",
+      "description": "Immutable operational audit records"
+    }
+  }
+}
